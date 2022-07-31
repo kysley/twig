@@ -20,3 +20,9 @@ Requires [AudioDeviceCmdlets](https://github.com/frgnca/AudioDeviceCmdlets) to b
 > twig headphones
 # Default playback & comm device is now my headphones >:)
 ```
+
+### With [PowerToys](https://docs.microsoft.com/en-us/windows/powertoys/)
+
+shift + space
+
+`'> twig <speakers | headphones>'`
