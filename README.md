@@ -3,6 +3,9 @@
 ## Overview
 A tool for me to quickly switch between playback devices on Windows.
 
+## Get device ids
+
+`> Get-AudioDevice -List`
 
 ## Installation
 
