@@ -7,8 +7,8 @@ import (
 	"os/exec"
 )
 
-var HeadphoneID = "{0.0.0.00000000}.{72abcb0f-8df8-49db-a7e7-557ca8b81fff}"
-var SpeakersID = "{0.0.0.00000000}.{9791eeb2-85e5-48c4-a591-1b8342b0a042}"
+var HeadphoneID = "{0.0.0.00000000}.{c8cd3c1f-1362-4155-a94e-1dc6de192397}"
+var SpeakersID = "{0.0.0.00000000}.{b1455689-75ac-44d8-bd9a-3a133140e8c3}"
 
 func main() {
 	argsWithoutProg := os.Args[1:]
