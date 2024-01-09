@@ -2,32 +2,66 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log"
 	"os"
-	"os/exec"
+
+	"github.com/charmbracelet/huh"
+	bolt "go.etcd.io/bbolt"
 )
 
-var HeadphoneID = "{0.0.0.00000000}.{c8cd3c1f-1362-4155-a94e-1dc6de192397}"
-var SpeakersID = "{0.0.0.00000000}.{b1455689-75ac-44d8-bd9a-3a133140e8c3}"
+func createSelectOptions(devices []AudioDevice) []huh.Option[string] {
+	var options []huh.Option[string]
+	for _, device := range devices {
+		options = append(options, huh.NewOption(device.Name, device.ID))
+	}
+
+	return options
+}
 
 func main() {
 	argsWithoutProg := os.Args[1:]
-	profile := argsWithoutProg[0]
 
-	flag.Parse()
-	if profile == "speakers" {
-		out, err := exec.Command("powershell", "Set-AudioDevice", "-ID", fmt.Sprintf("'%s'", SpeakersID)).CombinedOutput()
-		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + string(out))
+	// Open the my.db data file in your current directory.
+	// It will be created if it doesn't exist.
+	db, err := bolt.Open("twig.db", 0600, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Ensures that the Devices bucket exists
+	createDevicesBucket(db)
+
+	defer db.Close()
+
+	if (argsWithoutProg == nil) || (len(argsWithoutProg) == 0) {
+		runListForm(db)
+	} else {
+		commandOrDevice := argsWithoutProg[0]
+
+		flag.Parse()
+
+		if commandOrDevice == "list" {
+			runListForm(db)
+		} else if commandOrDevice == "add" {
+			runAddForm(db)
 		} else {
-			fmt.Printf("%s", out)
-		}
-	} else if profile == "headphones" {
-		out, err := exec.Command("powershell", "Set-AudioDevice", "-ID", fmt.Sprintf("'%s'", HeadphoneID)).CombinedOutput()
-		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + string(out))
-		} else {
-			fmt.Printf("%s", out)
+			db.View(func(tx *bolt.Tx) error {
+				// Assume bucket exists and has keys
+				b := tx.Bucket([]byte("Devices"))
+				deviceId := b.Get([]byte(commandOrDevice))
+
+				if deviceId == nil {
+					log.Fatalf("Device '%s' not found", commandOrDevice)
+				} else {
+					switchToAudioDevice(string(deviceId))
+				}
+				return nil
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
